@@ -1,0 +1,287 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="DuMinêro.css">
+    <link rel="icon" href="logo.png" type="image/png">
+    <title>DuMinêro</title>
+</head>
+<body>
+    <header class="header">
+        <img src="logo.png" alt="logo">
+        <h1>Catálogo de Vendas</h1>
+        <label for="search">Buscar Produtos:</label>
+        <input type="text" id="search" oninput="filterProducts()" placeholder="Digite o nome do produto">
+    </header>
+    <form id="catalog-form" action="https://formspree.io/f/mkgwekld" method="POST">
+        <div class="form-group">
+            <div>
+                <label for="Comprador">Nome do Comprador:</label>
+                <input type="text" id="Comprador" name="Comprador" required>
+            </div>
+            <div>
+                <label for="Vendedor">Nome do Vendedor:</label>
+                <input type="text" id="Vendedor" name="Vendedor" required>
+            </div>
+            <div>
+                <label for="Cnpj">CNPJ:</label>
+                <input type="text" id="Cnpj" name="Cnpj" required>
+            </div>
+            <div>
+                <label for="Endereço">Endereço:</label>
+                <input type="text" id="Endereço" name="Endereço" required>
+            </div>
+            <div>
+                <label for="Telefone">Telefone:</label>
+                <input type="text" id="Telefone" name="Telefone" required>
+            </div>
+        </div>
+        <div id="product-list">
+        </div>
+        <input type="hidden" name="products_info" id="products-info">
+        <input type="hidden" name="total" id="total">
+        <button type="button" onclick="calculateTotal()">Calcular Orçamento</button>
+        <button type="submit" id="submit-button" style="display: none;">Enviar Orçamento</button>
+    </form>
+    <div class="result" id="result"></div>
+    <script>
+        const products = [
+            { id: 1, name: 'Biscoito Bambolê 180g', price: 5.90, image: 'product1.jpg' },
+            { id: 2, name: 'Biscoito Beliscão 180g', price: 5.90, image: 'product2.jpg' },
+            { id: 3, name: 'Biscoito Casadinho 180g', price: 5.90, image: 'product3.jpg' },
+            { id: 4, name: 'Biscoito Cubinho 180g', price: 5.90, image: 'product4.jpg' },
+            { id: 5, name: 'Biscoito Flor 180g', price: 5.90, image: 'product5.jpg' },
+            { id: 6, name: 'Biscoito Nata 180g', price: 5.90, image: 'product6.jpg' },
+            { id: 7, name: 'Biscoito Sequilho 180g', price: 5.90, image: 'product7.jpg' },
+            { id: 8, name: 'Biscoito Uga-Uga 180g', price: 5.90, image: 'product8.jpg' },
+            { id: 9, name: 'Amemdoim C/Caramelo-Gergelim 100g', price: 5.90, image: 'product9.jpg' },
+            { id: 10, name: 'Banana Cristalizada 100g', price: 5.90, image: 'product10.jpg' },
+            { id: 11, name: 'Caldo De Cana C/Amemdoim 300g', price: 9.90, image: 'product11.jpg' },
+            { id: 12, name: 'Fondant de Leite C/Amemdoim Picadinho 200g', price: 5.90, image: 'product12.jpg' },
+            { id: 13, name: 'Fondant de Leite C/Chocolate Picadinho 200g', price: 5.90, image: 'product13.jpg' },
+            { id: 14, name: 'Fondant de Leite C/Coco Picadinho 200g', price: 5.90, image: 'product14.jpg' },
+            { id: 15, name: 'Fondant de Leite Picadinho 200g', price: 5.90, image: 'product15.jpg' },
+            { id: 16, name: 'Fondant de Leite Na Palha 200g', price: 11.90, image: 'product16.jpg' },
+            { id: 17, name: 'Banana Na Palha 200g', price: 11.90, image: 'product17.jpg' },
+            { id: 18, name: 'Goiaba Na Palha 200g', price: 11.90, image: 'product18.jpg' },
+            { id: 19, name: 'Abobora C/Coco 400g', price: 11.40, image: 'product19.jpg' },
+            { id: 20, name: 'Bananada 500g', price: 9.90, image: 'product20.jpg' },
+            { id: 21, name: 'Macarrão Marioni N°4 900g', price: 210.00, image: 'product21.jpg' },
+            { id: 22, name: 'Goiabada São Gonçalo 700g', price: 220.00, image: 'product22.jpg' },
+            { id: 23, name: 'Goiabada Caseira 700g', price: 16.80, image: 'product23.jpg' },
+            { id: 24, name: 'Goiabada Cascão 700g', price: 16.80, image: 'product24.jpg' },
+            { id: 25, name: 'Goiabada Cascão 500g', price: 13.90, image: 'product25.jpg' },
+            { id: 26, name: 'Goiabada Cascão 400g', price: 9.90, image: 'product26.jpg' },
+            { id: 27, name: 'Figada 400g', price: 16.90, image: 'product27.jpg' },
+            { id: 28, name: 'Fondant de Leite Em Tablet 400g', price: 12.70, image: 'product28.jpg' },
+            { id: 29, name: 'Fondant de Leite Em Tablet 500g', price: 290.00, image: 'product29.jpg' },
+            { id: 30, name: 'Fondant de Leite C/Chocolate Mesclado 400g', price: 18.90, image: 'product30.jpg' },
+            { id: 31, name: 'Fondant de Leite C/Goiabada 500g', price: 310.00, image: 'product31.jpg' },
+            { id: 32, name: 'Fondant de Leite Pingo C/Amendoim 400g', price: 15.90, image: 'product32.jpg' },
+            { id: 33, name: 'Fondant de Leite Pingo C/Amendoim 400g', price: 15.90, image: 'product33.jpg' },
+            { id: 34, name: 'Cocada C/Abacaxi 400g', price: 12.70, image: 'product34.jpg' },
+            { id: 35, name: 'Cocada Branca 400g', price: 12.70, image: 'product35.jpg' },
+            { id: 36, name: 'Cocada Branca C/Leite 400g', price: 12.70, image: 'product36.jpg' },
+            { id: 37, name: 'Cocada Mista Branca e Preta 400g', price: 12.70, image: 'product37.jpg' },
+            { id: 38, name: 'Cocada Mista Branca e Preta 400g', price: 12.70, image: 'product38.jpg' },
+            { id: 39, name: 'Paçoca Especial 400g', price: 12.70, image: 'product39.jpg' },
+            { id: 40, name: 'Pé De Moleque 400g', price: 12.70, image: 'product40.jpg' },
+            { id: 41, name: 'Pessegada 400g', price: 16.90, image: 'product41.jpg' },
+            { id: 42, name: 'Rapadura 400g', price: 7.90, image: 'product42.jpg' },
+            { id: 43, name: 'Rapadura Batida 500g', price: 7.90, image: 'product43.jpg' },
+            { id: 44, name: 'Rapadura C/Mamão 500g', price: 7.90, image: 'product44.jpg' },
+            { id: 45, name: 'Rapadura C/Amendoim 500g', price: 7.90, image: 'product45.jpg' },
+            { id: 46, name: 'Tijolo Baiano C/Abobora 400g', price: 11.40, image: 'product46.jpg' },
+            { id: 47, name: 'Tijolo Baiano C/Abobora-Cidra 400g', price: 11.40, image: 'product47.jpg' },
+            { id: 48, name: 'Tijolo Baiano C/Abobora-Coco 400g', price: 11.40, image: 'product48.jpg' },
+            { id: 49, name: 'Geleia De Mocoto Caipira 250g', price: 8.80, image: 'product49.jpg' },
+            { id: 50, name: 'Geleia De Mocoto Caipira 400g', price: 12.90, image: 'product50.jpg' },
+            { id: 51, name: 'Mocotop 160g', price: 3.40, image: 'product51.jpg' },
+            { id: 52, name: 'Geleia De Mocoto Rezenda 250g', price: 8.80, image: 'product52.jpg' },
+            { id: 53, name: 'Geleia De Mocoto C/Leite Condensado 500g', price: 12.90, image: 'product53.jpg' },
+            { id: 54, name: 'Geleia De Mocoto Dois Irmãos 60g', price: 530.00, image: 'product54.jpg' },
+            { id: 55, name: 'Abobora C/Coco 90g', price: 2.80, image: 'product55.jpg' },
+            { id: 56, name: 'Chocopé 90g', price: 2.80, image: 'product56.jpg' },
+            { id: 57, name: 'Cocada branca 90g', price: 2.80, image: 'product57.jpg' },
+            { id: 58, name: 'Cocada branca C/Leite 90g', price: 2.80, image: 'product58.jpg' },
+            { id: 59, name: 'Cocada Branca e Preta 90g', price: 2.80, image: 'product59.jpg' },
+            { id: 60, name: 'Fondant De Leite Puro 90g', price: 2.80, image: 'product60.jpg' },
+            { id: 61, name: 'Paçoca Especial 90g', price: 2.80, image: 'product61.jpg' },
+            { id: 62, name: 'Pe De Moça 90g', price: 2.80, image: 'product62.jpg' },
+            { id: 63, name: 'Pe De Moleque 90g', price: 2.80, image: 'product63.jpg' },
+            { id: 64, name: 'Quebra-Queixo 90g', price: 2.80, image: 'product64.jpg' },
+            { id: 65, name: 'Abobora em Calda 300g', price: 17.00, image: 'product65.jpg' },
+            { id: 66, name: 'Abobora C/Coco 650g', price: 17.00, image: 'product66.jpg' },
+            { id: 67, name: 'Ambrosia C/Fondant de leite 650g', price: 17.00, image: 'product67.jpg' },
+            { id: 68, name: 'Ameixa C/Queijo em Calda 700g', price: 29.00, image: 'product68.jpg' },
+            { id: 69, name: 'Banana Cremosa 650g', price: 17.00, image: 'product69.jpg' },
+            { id: 70, name: 'Caju em Calda 300g', price: 17.00, image: 'product70.jpg' },
+            { id: 71, name: 'Cidra Ralada 300g', price: 17.00, image: 'product71.jpg' },
+            { id: 72, name: 'Creme De Abobora 650g', price: 17.00, image: 'product72.jpg' },
+            { id: 73, name: 'Doce de Coco Cremoso C/Ameixa 650g', price: 17.00, image: 'product73.jpg' },
+            { id: 74, name: 'Doce de Coco Cremoso C/Abacaxi 650g', price: 17.00, image: 'product74.jpg' },
+            { id: 75, name: 'Doce de Coco Cremoso 650g', price: 17.00, image: 'product75.jpg' },
+            { id: 76, name: 'Doce de Coco Cremoso C/Doce de Leite 650g', price: 17.00, image: 'product76.jpg' },
+            { id: 77, name: 'Doce de Coco Cremoso C/Maracuja 650g', price: 17.00, image: 'product77.jpg' },
+            { id: 78, name: 'Doce de Coco Cremoso C/Morango 650g', price: 17.00, image: 'product78.jpg' },
+            { id: 79, name: 'Doce de Coco Cremoso C/Nozes 650g', price: 17.00, image: 'product79.jpg' },
+            { id: 80, name: 'Doce de Coco Cremoso C/Chocolate 650g', price: 17.00, image: 'product80.jpg' },
+            { id: 81, name: 'Salada de Frutas 300g', price: 17.00, image: 'product81.jpg' },
+            { id: 82, name: 'Figo em Calda 300g', price: 17.00, image: 'product82.jpg' },
+            { id: 83, name: 'Pessego em Calda 300g', price: 17.00, image: 'product83.jpg' },
+            { id: 84, name: 'Jaca em Calda 300g', price: 17.00, image: 'product84.jpg' },
+            { id: 85, name: 'Goiba Cremosa 650g', price: 17.00, image: 'product85.jpg' },
+            { id: 86, name: 'Goiba Cremosa 320g', price: 17.00, image: 'product86.jpg' },
+            { id: 87, name: 'Goibada Cascão de Colher 650g', price: 17.00, image: 'product87.jpg' },
+            { id: 88, name: 'Goiaba em Calda 300g', price: 17.00, image: 'product88.jpg' },
+            { id: 89, name: 'Laranja em Calda 300g', price: 17.00, image: 'product89.jpg' },
+            { id: 90, name: 'Doce de Mamão Ralado 300g', price: 17.00, image: 'product90.jpg' },
+            { id: 91, name: 'Doce de Mamão Enrolado 300g', price: 17.00, image: 'product91.jpg' },
+            { id: 92, name: 'Laranja Enrolada 300g', price: 17.00, image: 'product92.jpg' },
+            { id: 93, name: 'Doce de Mamão Enrolado C/Coco 650g', price: 17.00, image: 'product93.jpg' },
+            { id: 94, name: 'Mamão em Pedaços 300g', price: 17.00, image: 'product94.jpg' },
+            { id: 95, name: 'Fondant De Leite Puro 650g', price: 17.00, image: 'product95.jpg' },
+            { id: 96, name: 'Fondant De Leite C/Goiaba 650g', price: 17.00, image: 'product96.jpg' },
+            { id: 97, name: 'Fondant De Leite C/Abobora 650g', price: 17.00, image: 'product97.jpg' },
+            { id: 98, name: 'Fondant De Leite C/Ameixa 650g', price: 17.00, image: 'product98.jpg' },
+            { id: 99, name: 'Fondant De Leite C/Amendoim 650g', price: 17.00, image: 'product99.jpg' },
+            { id: 100, name: 'Fondant De Leite C/Brigadeiro 650g', price: 17.00, image: 'product100.jpg' },
+            { id: 101, name: 'Fondant De Leite C/Chocolate 650g', price: 17.00, image: 'product101.jpg' },
+            { id: 102, name: 'Fondant De Leite C/Cidra 650g', price: 17.00, image: 'product102.jpg' },
+            { id: 103, name: 'Fondant De Leite C/Coco 650g', price: 17.00, image: 'product103.jpg' },
+            { id: 104, name: 'Fondant De Leite C/Abacaxi 650g', price: 17.00, image: 'product104.jpg' },
+            { id: 105, name: 'Fondant De Leite C/Cereja 650g', price: 17.00, image: 'product105.jpg' },
+            { id: 106, name: 'Fondant De Leite C/Goiaba 650g', price: 17.00, image: 'product106.jpg' },
+            { id: 107, name: 'Fondant De Leite C/Maracuja 650g', price: 17.00, image: 'product107.jpg' },
+            { id: 108, name: 'Fondant De Leite C/Maracuja 320g', price: 17.00, image: 'product108.jpg' },
+            { id: 109, name: 'Fondant De Leite C/Mamão e Goiaba 650g', price: 17.00, image: 'product109.jpg' },
+            { id: 110, name: 'Fondant De Leite C/Nozes 650g', price: 17.00, image: 'product110.jpg' },
+            { id: 111, name: 'Fondant De Leite C/Morango 650g', price: 17.00, image: 'product111.jpg' },
+            { id: 112, name: 'Fondant De Leite C/Calda Caramelizada 650g', price: 17.00, image: 'product112.jpg' },
+            { id: 113, name: 'Fondant De Leite C/Mamão 650g', price: 17.00, image: 'product113.jpg' },
+            { id: 114, name: 'Fondant De Leite Talhado 650g', price: 17.00, image: 'product114.jpg' },
+            { id: 115, name: 'Geleia De Ameixa 320g', price: 17.00, image: 'product115.jpg' },
+            { id: 116, name: 'Geleia De Amora 320g', price: 17.00, image: 'product116.jpg' },
+            { id: 117, name: 'Geleia De Pessego 320g', price: 17.00, image: 'product117.jpg' },
+            { id: 118, name: 'Pimenta Biquinho 300g', price: 12.80, image: 'product118.jpg' },
+            { id: 119, name: 'Pimenta Biquinho 580g', price: 1180.00, image: 'product119.jpg' },
+            { id: 120, name: 'Pimenta Biquinho 3,6kg', price: 1190.00, image: 'product120.jpg' },
+            { id: 121, name: 'Pimenta Biquinho C/Cebola 300g', price: 1200.00, image: 'product121.jpg' },
+            { id: 122, name: 'Pimenta Boda Amarela 70g', price: 1210.00, image: 'product122.jpg' },
+            { id: 123, name: 'Pimenta Bode Amarela 160g', price: 1220.00, image: 'product123.jpg' },
+            { id: 124, name: 'Pimenta Bode Amarela 300g', price: 1230.00, image: 'product124.jpg' },
+            { id: 125, name: 'Pimenta Bode Decorativa 300g', price: 1240.00, image: 'product125.jpg' },
+            { id: 126, name: 'Pimenta Bode Amarela 900g', price: 1250.00, image: 'product126.jpg' },
+            { id: 127, name: 'Pimenta Mista 310g', price: 1260.00, image: 'product127.jpg' },
+            { id: 128, name: 'Pimenta Mista 900g', price: 1270.00, image: 'product128.jpg' },
+            { id: 129, name: 'Pimenta Bode Vermelha 70g', price: 1280.00, image: 'product129.jpg' },
+            { id: 130, name: 'Pimenta Bode Vermelha 160g', price: 1290.00, image: 'product130.jpg' },
+            { id: 131, name: 'Pimenta Boda Vermelha 300g', price: 1300.00, image: 'product131.jpg' },
+            { id: 132, name: 'Pimenta Bode Vermelha 900g', price: 1310.00, image: 'product132.jpg' },
+            { id: 133, name: 'Pimenta Cumarim Do Para 80g', price: 1320.00, image: 'product133.jpg' },
+            { id: 134, name: 'Pimenta Cumarim Do Para 160g', price: 1330.00, image: 'product134.jpg' },
+            { id: 135, name: 'Pimenta Cumarim Do Para 310g', price: 1340.00, image: 'product135.jpg' },
+            { id: 136, name: 'Pimenta Cumarim Verde 80g', price: 1350.00, image: 'product136.jpg' },
+            { id: 137, name: 'Pimenta Cumarim Verde 160g', price: 1360.00, image: 'product137.jpg' },
+            { id: 138, name: 'Pimenta Cumarim Verde 300g', price: 1370.00, image: 'product138.jpg' },
+            { id: 139, name: 'Pimenta Cumarim Verde 900g', price: 1380.00, image: 'product139.jpg' },
+            { id: 140, name: 'Pimenta Cumarim Vermelha 80g', price: 1390.00, image: 'product140.jpg' },
+            { id: 141, name: 'Pimenta Cumarim Vermelha 310g', price: 1400.00, image: 'product141.jpg' },
+            { id: 142, name: 'Pimenta Dedo de Moça 310g', price: 1410.00, image: 'product142.jpg' },
+            { id: 143, name: 'Pimenta Malagueta Verde 70g', price: 1420.00, image: 'product143.jpg' },
+            { id: 144, name: 'Pimenta Malagueta Verde 160g', price: 1430.00, image: 'product144.jpg' },
+            { id: 145, name: 'Pimenta Malagueta Vermelha 70g', price: 1440.00, image: 'product145.jpg' },
+            { id: 146, name: 'Pimenta Malagueta Vermelha 900g', price: 1450.00, image: 'product146.jpg' },
+            { id: 147, name: 'Molho De Alho Cremoso 145ml', price: 1460.00, image: 'product147.jpg' },
+            { id: 148, name: 'Molho De Alho C/Pimenta 145ml', price: 1470.00, image: 'product148.jpg' },
+            { id: 149, name: 'Molho De Azeitona 145ml', price: 1480.00, image: 'product149.jpg' },
+            { id: 150, name: 'Molho Cremoso C/Pimenta Verde 145ml', price: 1490.00, image: 'product150.jpg' },
+            { id: 151, name: 'Molho De Pimenta 150ml', price: 1500.00, image: 'product151.jpg' },
+            { id: 152, name: 'Molho De Pimenta 150ml', price: 1510.00, image: 'product152.jpg' },
+            { id: 153, name: 'Molho De Pequi C/Pimenta Cumarim do Para 145ml', price: 1520.00, image: 'product153.jpg' },
+            { id: 154, name: 'Melado De Cana 300ml', price: 1530.00, image: 'product154.jpg' },
+            { id: 155, name: 'Melado De Cana 1200g', price: 1540.00, image: 'product155.jpg' },
+            { id: 156, name: 'Batata Em Conserva 500g', price: 1550.00, image: 'product156.jpg' },
+            { id: 157, name: 'Pepino Em Conserva 500g', price: 1560.00, image: 'product157.jpg' },
+            { id: 158, name: 'Picles Em Conserva 500g', price: 1570.00, image: 'product158.jpg' },
+            { id: 159, name: 'Pequi Em Conserva 500g', price: 1580.00, image: 'product159.jpg' },
+            { id: 160, name: 'Pequi Em Conserva 500g', price: 1590.00, image: 'product160.jpg' },
+            { id: 161, name: 'Oleo De Pequi 120ml', price: 1600.00, image: 'product161.jpg' },
+            { id: 162, name: 'Pequi Fatiado 350g', price: 1610.00, image: 'product162.jpg' },
+            { id: 163, name: 'Polpa De Pequi 320g', price: 1620.00, image: 'product163.jpg' },
+            { id: 164, name: 'Farinha Temperada Calabresa 400g', price: 1630.00, image: 'product164.jpg' },
+            { id: 165, name: 'Farinha Bacon 400g', price: 1640.00, image: 'product165.jpg' },
+            { id: 166, name: 'Farinhas Temperada Ervas Finas 400g', price: 1650.00, image: 'product166.jpg' },
+            { id: 167, name: 'Farinha C/Pequi 400g', price: 1660.00, image: 'product167.jpg' },
+            { id: 168, name: 'Farinha Sabor Alho 400g', price: 1670.00, image: 'product168.jpg' },
+            { id: 169, name: 'Farinha De MIlho 400g', price: 1680.00, image: 'product169.jpg' },
+            { id: 170, name: 'Fuba Moido Na Pedra 500g', price: 1690.00, image: 'product170.jpg' },
+            { id: 171, name: 'Paçoca De Carne C/Farinha De Mancioca 400g', price: 1700.00, image: 'product171.jpg' },
+            { id: 172, name: 'Farinha Sabor Pichanha 400g', price: 1710.00, image: 'product172.jpg' },
+            { id: 173, name: 'Macarrão Marioni N°1 900g', price: 1720.00, image: 'product173.jpg' },
+            { id: 174, name: 'Macarrão Marioni N°2 900g', price: 1720.00, image: 'product174.jpg' },
+            { id: 175, name: 'Macarrão Marioni N°3 900g', price: 1720.00, image: 'product175.jpg' },
+        ];
+        const productList = document.getElementById('product-list');
+function createProductItem(product) {
+    return `
+        <div class="product-item" onclick="selectProduct(${product.id})">
+            <img src="imagens/${product.image}" alt="${product.name}" class="product-image">
+            <input type="checkbox" id="product${product.id}" name="product${product.id}" data-price="${product.price.toFixed(2)}">
+            <label for="product${product.id}">${product.name} - R$ ${product.price.toFixed(2)}</label>
+            <input type="number" id="quantity${product.id}" name="quantity${product.id}" min="0" placeholder="Quantidade" disabled onclick="event.stopPropagation();">
+        </div>
+    `;
+}
+products.forEach(product => {
+    productList.innerHTML += createProductItem(product);
+});
+function selectProduct(productId) {
+    const checkbox = document.getElementById(`product${productId}`);
+    const quantityInput = document.getElementById(`quantity${productId}`);
+    if (checkbox.checked) {
+        quantityInput.disabled = false;
+        quantityInput.focus();
+    } else {
+        quantityInput.disabled = true;
+        quantityInput.value = '';
+    }
+}
+function filterProducts() {
+    const search = document.getElementById('search').value.toLowerCase();
+    document.querySelectorAll('.product-item').forEach(item => {
+        const name = item.querySelector('label').textContent.toLowerCase();
+        if (name.includes(search)) {
+            item.style.display = '';
+        } else {
+            item.style.display = 'none';
+        }
+    });
+}
+function calculateTotal() {
+    const selectedProducts = [];
+    let total = 0;
+    products.forEach(product => {
+        const checkbox = document.getElementById(`product${product.id}`);
+        const quantityInput = document.getElementById(`quantity${product.id}`);
+        if (checkbox.checked && quantityInput.value > 0) {
+            const quantity = parseInt(quantityInput.value, 10);
+            const price = parseFloat(checkbox.getAttribute('data-price'));
+            total += price * quantity;
+            selectedProducts.push({
+                name: product.name,
+                quantity: quantity,
+                price: price
+            });
+        }
+    });
+    const productsInfo = selectedProducts.map(p => `${p.name} (Qtd: ${p.quantity}, R$ ${p.price.toFixed(2)})`).join('; ');
+    document.getElementById('products-info').value = productsInfo;
+    document.getElementById('total').value = total.toFixed(2);
+    document.getElementById('result').innerHTML = `Total: R$ ${total.toFixed(2)}`;
+    document.getElementById('submit-button').style.display = 'block';
+}
+</script>
+</body>
+</html>
